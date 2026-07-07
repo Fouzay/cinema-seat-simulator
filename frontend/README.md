@@ -1,32 +1,23 @@
 # Interactive Event Seating Map
 
-A React + TypeScript application that renders an interactive seating map for event arenas. Built with Vite and Tailwind CSS.
+A React + TypeScript application that renders an interactive seating map for event arenas. Built with Vite, Tailwind CSS, and pure CSS 3D transforms.
 
 ## Architecture
 
 The app has two coordinated views:
 
-- **3D Preview** (`PreviewViewport`) — full-screen 3D arena view with a fixed screen and seats positioned in world space. When a seat is selected, the camera smoothly transitions to that seat's perspective via CSS 3D transforms (`translateZ` + `rotateX/Y` with a 700ms ease-out transition). The screen never moves — only the camera does.
+- **3D Preview** (`PreviewViewport`) — full-screen CSS 3D arena view with a fixed screen image and surrounding walls. When a seat is selected from the SVG picker, the camera smoothly transitions to that seat's perspective via CSS 3D transforms (`perspective` + `rotateX/Y` + `translateZ`) at 1000ms ease-in-out. The screen never moves — only the camera does. Walls are children of the screen div with `transformOrigin` at the shared edge to stay structurally locked.
 
-- **Seat Picker Panel** (`SeatPickerPanel`) — a floating bottom panel showing a 2D SVG seat map with section-by-section navigation. Each seat is a `<rect>` SVG element with keyboard support and ARIA labels.
+- **Seat Picker Panel** (`SeatPickerPanel`) — a floating bottom panel showing a 2D SVG seat map with section-by-section navigation. Each seat is a `<rect>` SVG element with keyboard support, ARIA labels, and `React.memo` for render performance.
 
-State is managed through a `SelectionContext` with a `useReducer` for predictable state transitions. Selection persists to `localStorage` across page reloads.
+- **State Management** — `SelectionContext` + `useReducer` drives selection state. `localStorage` persists selected seat IDs across page reloads (max 8 seats). Seat world positions are computed once via `buildArenaLayout()` and never recomputed at click time, keeping preview transforms and panel coordinates in sync.
 
-### Key trade-offs
+## Key trade-offs
 
-- **CSS 3D transforms over Three.js** — the 3D preview uses `perspective` + `preserve-3d` + CSS transitions for camera movement, avoiding the complexity of a WebGL library. This works well for the demo scale but would need WebGL for 15,000+ seats with smooth 60fps performance.
-- **Separate views for picking and previewing** — the 2D SVG picker provides reliable mouse/keyboard interaction, while the 3D preview gives spatial context. Keeping them separate avoids reconciliation issues between coordinate systems.
-- **`React.memo` on `Seat`** — prevents unnecessary re-renders when other seats update. For 15k seats, a virtualized SVG renderer (rendering only visible seats) would be needed.
-- **`useRef` for selection validation** — `toggleSeat` uses a ref (not state) for the latest selection array, keeping the callback identity stable so `React.memo` works correctly.
-
-## Incomplete features / TODOs
-
-- Performance optimization for 15,000+ seats (virtualized SVG or canvas rendering)
-- WebSocket live seat-status updates
-- Heat-map toggle by price tier
-- "Find N adjacent seats" helper
-- Pinch-zoom + pan for mobile touch gestures
-- End-to-end tests (Playwright/Cypress)
+- **CSS 3D transforms over Three.js** — the 3D preview uses `perspective: 3000px` + `preserve-3d` + CSS transitions for camera movement, avoiding a WebGL bundling dependency. This works well for the current scale (~5000 seats) but would need WebGL for 15,000+ seats with smooth 60fps.
+- **Separate views for picking and previewing** — the 2D SVG picker provides reliable mouse/keyboard/touch interaction, while the 3D preview gives spatial context. Keeping them separate avoids coordinate-system reconciliation issues.
+- **`React.memo` on `Seat`** — prevents unnecessary re-renders when other seats update. For 15k+ seats, a virtualized SVG renderer (rendering only visible seats) would be needed.
+- **Walls as children of the screen** — using `right-full`/`left-full` with `transformOrigin` at the shared edge keeps walls structurally locked to the screen without manual pixel offsets.
 
 ## Getting started
 
@@ -36,3 +27,12 @@ pnpm dev
 ```
 
 The app loads `public/venue-demo.json` by default. Generate larger test data with `pnpm generate:venue`.
+
+## Tests
+
+```bash
+pnpm test          # run once
+pnpm test:watch    # watch mode
+```
+
+Uses Vitest + jsdom. Tests cover arena layout computation, selection reducer, and price tier lookups.

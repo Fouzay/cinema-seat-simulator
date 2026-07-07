@@ -1,5 +1,5 @@
 export const PREVIEW_PERSPECTIVE_PX = 3000;
-export const MAX_CAMERA_YAW_DEG = 20;
+export const MAX_CAMERA_YAW_DEG = 4;
 
 /**
  * Fixed horizontal width for any single section's seat cluster. Every
@@ -10,7 +10,7 @@ export const MAX_CAMERA_YAW_DEG = 20;
 export const CLUSTER_WIDTH_PX = 2000;
 
 /** Depth step between adjacent sections, stacked back-to-back. */
-export const SECTION_Z_STEP_PX = 200;
+export const SECTION_Z_STEP_PX = 100;
 
 /** Depth step between rows within the same section. */
 export const ROW_Z_STEP_PX = 100;
@@ -35,3 +35,8 @@ export const SCREEN_WORLD_Y = -50;
 export const SCREEN_WORLD_Z = -400;
 export const SCREEN_WIDTH_PX = 1600;
 export const SCREEN_HEIGHT_PX = 900;
+
+/** Side wall flare angle (degrees). Higher = wider flare. */
+export const WALL_YAW_DEG = 28;
+/** Side wall background color. */
+export const WALL_COLOR = 'blue';

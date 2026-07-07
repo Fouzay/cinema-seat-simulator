@@ -48,7 +48,7 @@ export function SeatPickerPanel({ venue, children }: SeatPickerPanelProps) {
             ← Prev
           </button>
           <span className="text-xs text-white/70">
-            {venue.sections[currentSection].label} — {currentSection + 1} / {sectionCount}
+            {venue.sections[currentSection]?.label ?? ''} — {currentSection + 1} / {sectionCount}
           </span>
           <button
             onClick={goNext}
