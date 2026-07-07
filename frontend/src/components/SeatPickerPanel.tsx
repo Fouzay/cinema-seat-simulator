@@ -9,6 +9,7 @@ export interface SeatPickerPanelProps {
 
 export function SeatPickerPanel({ venue, children }: SeatPickerPanelProps) {
   const [currentSection, setCurrentSection] = useState(0);
+  const [minimized, setMinimized] = useState(false);
   const sectionCount = venue.sections.length;
 
   const goNext = useCallback(() => {
@@ -24,6 +25,18 @@ export function SeatPickerPanel({ venue, children }: SeatPickerPanelProps) {
 
   const content = children ?? <SeatMap venue={venue} visibleSectionIndex={currentSection} />;
 
+  if (minimized) {
+    return (
+      <button
+        onClick={() => setMinimized(false)}
+        className="absolute bottom-6 left-1/2 z-10 -translate-x-1/2 rounded-lg border border-white/20 bg-neutral-900/80 px-4 py-2 text-xs text-white shadow-lg backdrop-blur-md transition-colors hover:bg-white/20"
+        aria-label="Show seat map"
+      >
+        ▲ Show Map
+      </button>
+    );
+  }
+
   return (
     <div
       className="absolute bottom-6 left-1/2 z-10 h-72 w-[80rem] max-w-[96vw] -translate-x-1/2 rounded-xl border border-white/20 bg-black/10 p-3 shadow-2xl backdrop-blur-md"
@@ -31,6 +44,13 @@ export function SeatPickerPanel({ venue, children }: SeatPickerPanelProps) {
     >
       <div className="flex h-full w-full flex-col">
         <div className="relative flex-1 overflow-hidden">
+          <button
+            onClick={() => setMinimized(true)}
+            className="absolute right-1 top-1 z-20 rounded bg-white/10 px-2 py-0.5 text-xs text-white/70 transition-colors hover:bg-white/20"
+            aria-label="Minimize seat map"
+          >
+            ▼
+          </button>
           <div
             key={currentSection}
             className="flex h-full w-full items-center justify-center"
