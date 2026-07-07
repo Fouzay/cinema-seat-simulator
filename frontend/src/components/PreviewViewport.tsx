@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import type { Venue } from '@/types';
 import screenImage from '@/assets/screen.jpg';
 import {
@@ -13,6 +13,8 @@ import {
 import { buildArenaLayout } from '@/utils/arenaLayout';
 import { useSelectionContext } from '@/context/SelectionContext';
 
+const DESIGN_VIEWPORT_WIDTH = 1400;
+
 export interface PreviewViewportProps {
   venue: Venue;
 }
@@ -20,6 +22,17 @@ export interface PreviewViewportProps {
 export function PreviewViewport({ venue }: PreviewViewportProps) {
   const { selectedSeatIds, activeSeatId } = useSelectionContext();
   const selectedSet = useMemo(() => new Set(selectedSeatIds), [selectedSeatIds]);
+
+  const [viewportScale, setViewportScale] = useState(1);
+
+  useEffect(() => {
+    const updateScale = () => {
+      setViewportScale(Math.min(1, window.innerWidth / DESIGN_VIEWPORT_WIDTH));
+    };
+    updateScale();
+    window.addEventListener('resize', updateScale);
+    return () => window.removeEventListener('resize', updateScale);
+  }, []);
 
   const arenaLayout = useMemo(() => buildArenaLayout(venue), [venue]);
 
@@ -64,9 +77,7 @@ export function PreviewViewport({ venue }: PreviewViewportProps) {
           className="absolute inset-0 z-0 transition-transform duration-700 ease-out"
           style={{
             transformStyle: 'preserve-3d',
-            // Head rotation applied LAST (outermost wrapper) so it rotates
-            // the scene around the camera position, not the world origin.
-            transform: `rotateX(${pitchDeg}deg) rotateY(${yawDeg}deg)`,
+            transform: `scale(${viewportScale}) rotateX(${pitchDeg}deg) rotateY(${yawDeg}deg)`,
           }}
         >
           <div

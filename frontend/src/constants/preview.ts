@@ -7,7 +7,7 @@ export const MAX_CAMERA_YAW_DEG = 20;
  * by construction — worldX can never exceed this regardless of how many
  * sections/clusters exist or how far back one is.
  */
-export const CLUSTER_WIDTH_PX = 1200;
+export const CLUSTER_WIDTH_PX = 2000;
 
 /** Depth step between adjacent sections, stacked back-to-back. */
 export const SECTION_Z_STEP_PX = 200;
