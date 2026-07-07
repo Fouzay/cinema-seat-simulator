@@ -64,21 +64,21 @@ export function PreviewViewport({ venue }: PreviewViewportProps) {
     >
       {pos && (
         <div
-          className="absolute inset-0 z-0 transition-transform duration-1000 ease-in-out"
+          className="absolute inset-0 z-0 transition-transform duration-500 ease-out will-change-transform"
           style={{
             transformStyle: 'preserve-3d',
             transform: `scale(${viewportScale}) rotateX(${pitchDeg}deg) rotateY(${yawDeg}deg)`,
           }}
         >
           <div
-            className="absolute inset-0 transition-transform duration-1000 ease-in-out"
+            className="absolute inset-0 transition-transform duration-500 ease-out will-change-transform"
             style={{
               transformStyle: 'preserve-3d',
               transform: `translateZ(${-cameraZ}px) translateY(${-cameraY}px) translateX(${-cameraX}px)`,
             }}
           >
             <div
-              className="absolute shadow-2xl transition-transform duration-1000 ease-in-out"
+              className="absolute shadow-2xl transition-transform duration-500 ease-out will-change-transform"
               style={{
                 left: '50%',
                 top: '50%',
