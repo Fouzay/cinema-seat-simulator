@@ -3,6 +3,20 @@ import type { Venue } from '@/types';
 import { getPriceForTier } from '@/constants/priceTiers';
 import { useSelectionContext } from '@/context/SelectionContext';
 import { SEAT_STATUS_THEME } from '@/constants/seatStatusTheme';
+import { buildQuickPickVenue } from '@/utils/quickPickSeats';
+
+function findSeat(venue: Venue, seatId: string) {
+  for (const section of venue.sections) {
+    for (const row of section.rows) {
+      for (const seat of row.seats) {
+        if (seat.id === seatId) {
+          return { section, row, seat, col: seat.col, rowIndex: row.index };
+        }
+      }
+    }
+  }
+  return null;
+}
 
 export interface SeatDetailsPanelProps {
   venue: Venue;
@@ -13,16 +27,7 @@ export function SeatDetailsPanel({ venue, seatId }: SeatDetailsPanelProps) {
   const { setActiveSeat, toggleSeat } = useSelectionContext();
 
   const seatInfo = useMemo(() => {
-    for (const section of venue.sections) {
-      for (const row of section.rows) {
-        for (const seat of row.seats) {
-          if (seat.id === seatId) {
-            return { section, row, seat, col: seat.col, rowIndex: row.index };
-          }
-        }
-      }
-    }
-    return null;
+    return findSeat(venue, seatId) ?? findSeat(buildQuickPickVenue(), seatId) ?? null;
   }, [venue, seatId]);
 
   if (!seatInfo) return null;

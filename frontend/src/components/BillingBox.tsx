@@ -2,6 +2,19 @@ import { useMemo } from 'react';
 import type { Venue } from '@/types';
 import { useSelectionContext } from '@/context/SelectionContext';
 import { getPriceForTier } from '@/constants/priceTiers';
+import { buildQuickPickVenue } from '@/utils/quickPickSeats';
+
+function buildPriceMap(venue: Venue): Map<string, number> {
+  const map = new Map<string, number>();
+  venue.sections.forEach((section) => {
+    section.rows.forEach((row) => {
+      row.seats.forEach((seat) => {
+        map.set(seat.id, getPriceForTier(seat.priceTier));
+      });
+    });
+  });
+  return map;
+}
 
 export interface BillingBoxProps {
   venue: Venue;
@@ -11,14 +24,8 @@ export function BillingBox({ venue }: BillingBoxProps) {
   const { selectedSeatIds } = useSelectionContext();
 
   const seatPriceMap = useMemo(() => {
-    const map = new Map<string, number>();
-    venue.sections.forEach((section) => {
-      section.rows.forEach((row) => {
-        row.seats.forEach((seat) => {
-          map.set(seat.id, getPriceForTier(seat.priceTier));
-        });
-      });
-    });
+    const map = buildPriceMap(venue);
+    buildPriceMap(buildQuickPickVenue()).forEach((price, id) => map.set(id, price));
     return map;
   }, [venue]);
 
