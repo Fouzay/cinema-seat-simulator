@@ -32,7 +32,7 @@ export function SeatDetailsPanel({ venue, seatId }: SeatDetailsPanelProps) {
   const statusLabel = SEAT_STATUS_THEME[seat.status].legendLabel;
 
   return (
-    <div className="absolute left-4 top-4 z-20 min-w-48 rounded-lg border border-white/10 bg-neutral-900/90 p-4 shadow-xl backdrop-blur-md">
+    <div className="absolute left-4 top-12 z-20 min-w-48 rounded-lg border border-white/10 bg-neutral-900/90 p-4 shadow-xl backdrop-blur-md">
       <h3 className="mb-2 text-sm font-semibold text-white">{section.label}</h3>
       <dl className="space-y-1 text-xs text-neutral-300">
         <div className="flex justify-between">

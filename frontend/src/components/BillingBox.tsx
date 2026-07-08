@@ -31,7 +31,7 @@ export function BillingBox({ venue }: BillingBoxProps) {
   const count = selectedSeatIds.length;
 
   return (
-    <div className="absolute bottom-4 right-4 z-20 flex flex-col items-end gap-1.5">
+    <div className="absolute top-4 right-4 z-20 flex flex-col items-end gap-1.5">
       <div className="rounded-lg border border-amber-200/10 bg-neutral-900/80 px-4 py-2 shadow-lg backdrop-blur-md">
         <div className="text-right text-xs text-neutral-400">
           Selected: <span className="font-medium text-white">{count}</span>

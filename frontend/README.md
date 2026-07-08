@@ -21,6 +21,8 @@ The app has two coordinated views:
 
 ## Getting started
 
+inside frontend:
+
 ```bash
 pnpm install
 pnpm dev
