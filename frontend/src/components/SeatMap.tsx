@@ -82,9 +82,18 @@ export function SeatMap({ venue, visibleSectionIndex = -1, onGridEdge }: SeatMap
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
-      const current = focusedSeatId;
-      if (!current) return;
-      const entry = grid.byId.get(current);
+      if (!focusedSeatId) {
+        const firstRow = [...grid.rows.keys()].sort((a, b) => a - b)[0];
+        const firstSeats = grid.rows.get(firstRow);
+        if (firstSeats && firstSeats.length > 0) {
+          const id = firstSeats[0].id;
+          focusSeat(id);
+          handleSeatClick(id);
+        }
+        return;
+      }
+
+      const entry = grid.byId.get(focusedSeatId);
       if (!entry) return;
 
       let nextId: string | null = null;
@@ -95,7 +104,7 @@ export function SeatMap({ venue, visibleSectionIndex = -1, onGridEdge }: SeatMap
       if (e.key === 'ArrowRight') {
         e.preventDefault();
         if (sameRow) {
-          const idx = sameRow.findIndex(g => g.id === current);
+          const idx = sameRow.findIndex(g => g.id === focusedSeatId);
           if (idx < sameRow.length - 1) {
             nextId = sameRow[idx + 1].id;
           } else if (rowIdx === sortedRows.length - 1) {
@@ -105,7 +114,7 @@ export function SeatMap({ venue, visibleSectionIndex = -1, onGridEdge }: SeatMap
       } else if (e.key === 'ArrowLeft') {
         e.preventDefault();
         if (sameRow) {
-          const idx = sameRow.findIndex(g => g.id === current);
+          const idx = sameRow.findIndex(g => g.id === focusedSeatId);
           if (idx > 0) {
             nextId = sameRow[idx - 1].id;
           } else if (rowIdx === 0) {
@@ -152,6 +161,7 @@ export function SeatMap({ venue, visibleSectionIndex = -1, onGridEdge }: SeatMap
       className="h-full w-full"
       role="img"
       aria-label={`Seating map for ${venue.name}`}
+      tabIndex={0}
       onKeyDown={handleKeyDown}
     >
       <g transform="translate(0,40)">

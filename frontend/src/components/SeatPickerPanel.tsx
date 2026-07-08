@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, type ReactNode } from 'react';
+import { useState, useCallback, useEffect, useRef, type ReactNode } from 'react';
 import type { Venue } from '@/types';
 import { SeatMap } from '@/components/SeatMap';
 import { buildQuickPickVenue } from '@/utils/quickPickSeats';
@@ -13,6 +13,7 @@ export function SeatPickerPanel({ venue, children }: SeatPickerPanelProps) {
   const [minimized, setMinimized] = useState(false);
   const [showAll, setShowAll] = useState(false);
   const sectionCount = venue.sections.length;
+  const panelRef = useRef<HTMLDivElement>(null);
 
   const quickPickVenue = buildQuickPickVenue();
 
@@ -28,6 +29,25 @@ export function SeatPickerPanel({ venue, children }: SeatPickerPanelProps) {
     const handler = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         setMinimized(m => !m);
+        return;
+      }
+
+      if (!e.key.startsWith('Arrow')) return;
+      const active = document.activeElement;
+      if (!panelRef.current?.contains(active)) return;
+      const tag = active?.tagName;
+      if (tag === 'svg' || active?.getAttribute('role') === 'button') return;
+
+      const buttons = panelRef.current.querySelectorAll<HTMLButtonElement>('button:not([disabled])');
+      const arr = Array.from(buttons);
+      const idx = arr.indexOf(active as HTMLButtonElement);
+      if (idx === -1) return;
+
+      e.preventDefault();
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+        arr[(idx + 1) % arr.length]?.focus();
+      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        arr[(idx - 1 + arr.length) % arr.length]?.focus();
       }
     };
     window.addEventListener('keydown', handler);
@@ -66,6 +86,7 @@ export function SeatPickerPanel({ venue, children }: SeatPickerPanelProps) {
 
   return (
     <div
+      ref={panelRef}
       className="absolute bottom-6 left-1/2 z-10 h-72 w-[80rem] max-w-[96vw] -translate-x-1/2 rounded-xl border border-white/20 bg-black/10 p-3 shadow-2xl backdrop-blur-md"
       style={{ WebkitBackdropFilter: 'blur(6px)', backdropFilter: 'blur(6px)' }}
     >
