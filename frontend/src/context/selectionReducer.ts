@@ -17,7 +17,6 @@ export function loadInitialState(): SelectionState {
       }
     }
   } catch {
-    // localStorage may be unavailable or data corrupted
   }
   return defaultState;
 }

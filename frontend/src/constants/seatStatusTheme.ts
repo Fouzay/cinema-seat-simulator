@@ -8,11 +8,6 @@ export interface SeatStatusThemeEntry {
   legendLabel: string;
 }
 
-/**
- * Single source of truth for how each seat visual state is styled.
- * Every component that needs a color, cursor, or legend text for a
- * seat status should read from this map — never hardcode colors inline.
- */
 export const SEAT_STATUS_THEME: Record<SeatVisualState, SeatStatusThemeEntry> = {
   available: {
     fill: '#ffffff',
@@ -51,7 +46,6 @@ export const SEAT_STATUS_THEME: Record<SeatVisualState, SeatStatusThemeEntry> = 
   },
 };
 
-/** Stable, predictable order for rendering a legend. */
 export const SEAT_STATUS_LEGEND_ORDER: SeatVisualState[] = [
   'available',
   'selected',

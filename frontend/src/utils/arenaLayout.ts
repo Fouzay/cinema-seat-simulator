@@ -1,19 +1,6 @@
 import type { ArenaSeatPosition, Venue } from '@/types';
 import { CLUSTER_WIDTH_PX, SECTION_Z_STEP_PX, ROW_Z_STEP_PX, SECTION_Y_STEP_PX, BASE_Y_OFFSET_PX, ROW_Y_STEP_PX } from '@/constants/preview';
 
-/**
- * Builds every seat's canonical 3D world position ONCE per venue load.
- * Sections are stacked back-to-back along the depth (Z) axis — not
- * spread side-by-side — so each section's own horizontal spread is
- * always the same fixed CLUSTER_WIDTH_PX, regardless of which section
- * it is. That's what keeps camera yaw naturally bounded: worldX can
- * never exceed CLUSTER_WIDTH_PX / 2 by construction, so no clamping
- * hack is needed downstream.
- *
- * This is the single source of truth — SeatPickerPanel/SeatMap only
- * ever look up a seatId here; they never generate or recompute a
- * position themselves.
- */
 export function buildArenaLayout(venue: Venue): Map<string, ArenaSeatPosition> {
   const layout = new Map<string, ArenaSeatPosition>();
 

@@ -8,14 +8,6 @@ export interface UseVenueResult {
   error: string | null;
 }
 
-/**
- * Loads venue JSON from /public and exposes it as { venue, loading, error }.
- *
- * This hook owns the "where does the data come from" concern so that
- * App/SeatMap never need to know whether the venue came from a static
- * JSON file (today) or a future backend endpoint (later) — only the
- * inside of this hook would need to change.
- */
 export function useVenue(venuePath: string = DEFAULT_VENUE_PATH): UseVenueResult {
   const [venue, setVenue] = useState<Venue | null>(null);
   const [loading, setLoading] = useState<boolean>(true);

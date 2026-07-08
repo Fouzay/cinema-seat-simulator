@@ -34,7 +34,6 @@ export function SelectionProvider({ children }: { children: ReactNode }) {
     try {
       localStorage.setItem(SELECTION_STORAGE_KEY, JSON.stringify(state.selectedSeatIds));
     } catch {
-      // localStorage may be unavailable
     }
   }, [state.selectedSeatIds]);
 
@@ -61,7 +60,6 @@ export function SelectionProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const getClusterForSeat = useCallback((seatId: string): string | null => {
-    // Parse cluster from seat ID format: e.g. "A-1-01" → "A"
     const parts = seatId.split('-');
     return parts.length >= 1 ? parts[0] : null;
   }, []);
