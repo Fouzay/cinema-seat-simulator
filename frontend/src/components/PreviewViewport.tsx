@@ -50,12 +50,12 @@ export function PreviewViewport({ venue }: PreviewViewportProps) {
   const pos = activePosition ?? defaultPosition;
   const isQuickPick = activeSeatId?.startsWith('QP-');
 
-  const cameraZ = pos?.worldZ ?? 0;
-  const cameraX = (pos?.worldX ?? 0) * (isQuickPick ? 0.8 : 0.3);
+  const cameraZ = (pos?.worldZ ?? 0) * (isQuickPick ? 3 : 1);
+  const cameraX = (pos?.worldX ?? 0) * 0.3;
   const cameraY = (pos?.worldY ?? 0) - (isQuickPick ? 100 : 200);
 
   const yawDeg = pos
-    ? -(pos.worldX / (CLUSTER_WIDTH_PX / 2)) * (isQuickPick ? MAX_CAMERA_YAW_DEG * 2 : MAX_CAMERA_YAW_DEG)
+    ? -(pos.worldX / (CLUSTER_WIDTH_PX / 2)) * MAX_CAMERA_YAW_DEG
     : 0;
 
   const pitchDeg = pos ? -(pos.worldY + 50) / (isQuickPick ? 120 : 200) : 0;
