@@ -14,7 +14,8 @@ function VenueView({
 }: {
   venue: NonNullable<ReturnType<typeof useVenue>['venue']>;
 }) {
-  const { activeSeatId } = useSelectionContext();
+  const { activeSeatId, hoveredSeatId } = useSelectionContext();
+  const detailSeatId = hoveredSeatId ?? activeSeatId;
 
   return (
     <div className="relative h-dvh w-full overflow-hidden bg-black">
@@ -22,10 +23,10 @@ function VenueView({
 
       <SeatPickerPanel venue={venue} />
 
-      {activeSeatId && (
+      {detailSeatId && (
         <SeatDetailsPanel
           venue={venue}
-          seatId={activeSeatId}
+          seatId={detailSeatId}
         />
       )}
 

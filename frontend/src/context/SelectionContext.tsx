@@ -22,6 +22,8 @@ export interface SelectionContextValue {
   activeClusterId: string | null;
   setActiveSeat: (seatId: string | null) => void;
   getClusterForSeat: (seatId: string) => string | null;
+  hoveredSeatId: string | null;
+  setHoveredSeat: (seatId: string | null) => void;
 }
 
 const SelectionContext = createContext<SelectionContextValue | null>(null);
@@ -29,6 +31,7 @@ const SelectionContext = createContext<SelectionContextValue | null>(null);
 export function SelectionProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(selectionReducer, undefined, loadInitialState);
   const [activeSeatId, setActiveSeat] = useState<string | null>(null);
+  const [hoveredSeatId, setHoveredSeat] = useState<string | null>(null);
 
   useEffect(() => {
     try {
@@ -75,8 +78,10 @@ export function SelectionProvider({ children }: { children: ReactNode }) {
       activeClusterId,
       setActiveSeat,
       getClusterForSeat,
+      hoveredSeatId,
+      setHoveredSeat,
     }),
-    [state.selectedSeatIds, toggleSeat, clearSelection, activeSeatId, activeClusterId, getClusterForSeat],
+    [state.selectedSeatIds, toggleSeat, clearSelection, activeSeatId, activeClusterId, getClusterForSeat, hoveredSeatId, setHoveredSeat],
   );
 
   return <SelectionContext.Provider value={value}>{children}</SelectionContext.Provider>;

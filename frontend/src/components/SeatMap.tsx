@@ -16,7 +16,7 @@ interface GridEntry {
 }
 
 export function SeatMap({ venue, visibleSectionIndex = -1, onGridEdge }: SeatMapProps) {
-  const { selectedSeatIds, toggleSeat, setActiveSeat } = useSelectionContext();
+  const { selectedSeatIds, toggleSeat, setActiveSeat, setHoveredSeat } = useSelectionContext();
   const [focusedSeatId, setFocusedSeatId] = useState<string | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
 
@@ -154,14 +154,14 @@ export function SeatMap({ venue, visibleSectionIndex = -1, onGridEdge }: SeatMap
   );
 
   const handleHover = useCallback((seatId: string) => {
-    setActiveSeat(seatId);
-  }, [setActiveSeat]);
+    setHoveredSeat(seatId);
+  }, [setHoveredSeat]);
 
   const handleHoverEnd = useCallback((seatId: string) => {
     if (!selectedSet.has(seatId)) {
-      setActiveSeat(null);
+      setHoveredSeat(null);
     }
-  }, [selectedSet, setActiveSeat]);
+  }, [selectedSet, setHoveredSeat]);
 
   return (
     <svg
