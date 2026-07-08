@@ -6,6 +6,7 @@ import { useSelectionContext } from '@/context/SelectionContext';
 export interface SeatMapProps {
   venue: Venue;
   visibleSectionIndex?: number;
+  onGridEdge?: (direction: 'prev' | 'next') => void;
 }
 
 interface GridEntry {
@@ -14,7 +15,7 @@ interface GridEntry {
   col: number;
 }
 
-export function SeatMap({ venue, visibleSectionIndex = -1 }: SeatMapProps) {
+export function SeatMap({ venue, visibleSectionIndex = -1, onGridEdge }: SeatMapProps) {
   const { selectedSeatIds, toggleSeat, setActiveSeat } = useSelectionContext();
   const [focusedSeatId, setFocusedSeatId] = useState<string | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
@@ -40,6 +41,16 @@ export function SeatMap({ venue, visibleSectionIndex = -1 }: SeatMapProps) {
     return map;
   }, [sections]);
 
+  const focusSeat = useCallback((seatId: string) => {
+    setFocusedSeatId(seatId);
+    const el = document.getElementById(seatId);
+    el?.focus();
+  }, []);
+
+  const handleSeatFocus = useCallback((seatId: string) => {
+    setFocusedSeatId(seatId);
+  }, []);
+
   const grid = useMemo(() => {
     const rows = new Map<number, GridEntry[]>();
     const byId = new Map<string, GridEntry>();
@@ -64,15 +75,10 @@ export function SeatMap({ venue, visibleSectionIndex = -1 }: SeatMapProps) {
       if (!status) return;
       toggleSeat(seatId, status);
       setActiveSeat(seatId);
+      focusSeat(seatId);
     },
-    [seatStatusById, toggleSeat, setActiveSeat],
+    [seatStatusById, toggleSeat, setActiveSeat, focusSeat],
   );
-
-  const focusSeat = useCallback((seatId: string) => {
-    setFocusedSeatId(seatId);
-    const el = document.getElementById(seatId);
-    el?.focus();
-  }, []);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -82,44 +88,51 @@ export function SeatMap({ venue, visibleSectionIndex = -1 }: SeatMapProps) {
       if (!entry) return;
 
       let nextId: string | null = null;
+      const sortedRows = [...grid.rows.keys()].sort((a, b) => a - b);
+      const rowIdx = sortedRows.indexOf(entry.row);
+      const sameRow = grid.rows.get(entry.row);
 
       if (e.key === 'ArrowRight') {
         e.preventDefault();
-        const sameRow = grid.rows.get(entry.row);
         if (sameRow) {
           const idx = sameRow.findIndex(g => g.id === current);
-          if (idx < sameRow.length - 1) nextId = sameRow[idx + 1].id;
+          if (idx < sameRow.length - 1) {
+            nextId = sameRow[idx + 1].id;
+          } else if (rowIdx === sortedRows.length - 1) {
+            onGridEdge?.('next');
+          }
         }
       } else if (e.key === 'ArrowLeft') {
         e.preventDefault();
-        const sameRow = grid.rows.get(entry.row);
         if (sameRow) {
           const idx = sameRow.findIndex(g => g.id === current);
-          if (idx > 0) nextId = sameRow[idx - 1].id;
+          if (idx > 0) {
+            nextId = sameRow[idx - 1].id;
+          } else if (rowIdx === 0) {
+            onGridEdge?.('prev');
+          }
         }
       } else if (e.key === 'ArrowDown') {
         e.preventDefault();
-        const rows = [...grid.rows.keys()].sort((a, b) => a - b);
-        const rowIdx = rows.indexOf(entry.row);
-        if (rowIdx < rows.length - 1) {
-          const nextRow = rows[rowIdx + 1];
-          const nextRowSeats = grid.rows.get(nextRow);
+        if (rowIdx < sortedRows.length - 1) {
+          const nextRowSeats = grid.rows.get(sortedRows[rowIdx + 1]);
           if (nextRowSeats && nextRowSeats.length > 0) {
             const colIdx = Math.min(entry.col - 1, nextRowSeats.length - 1);
             nextId = nextRowSeats[colIdx].id;
           }
+        } else {
+          onGridEdge?.('next');
         }
       } else if (e.key === 'ArrowUp') {
         e.preventDefault();
-        const rows = [...grid.rows.keys()].sort((a, b) => a - b);
-        const rowIdx = rows.indexOf(entry.row);
         if (rowIdx > 0) {
-          const prevRow = rows[rowIdx - 1];
-          const prevRowSeats = grid.rows.get(prevRow);
+          const prevRowSeats = grid.rows.get(sortedRows[rowIdx - 1]);
           if (prevRowSeats && prevRowSeats.length > 0) {
             const colIdx = Math.min(entry.col - 1, prevRowSeats.length - 1);
             nextId = prevRowSeats[colIdx].id;
           }
+        } else {
+          onGridEdge?.('prev');
         }
       }
 
@@ -128,7 +141,7 @@ export function SeatMap({ venue, visibleSectionIndex = -1 }: SeatMapProps) {
         handleSeatClick(nextId);
       }
     },
-    [focusedSeatId, grid, focusSeat, handleSeatClick],
+    [focusedSeatId, grid, focusSeat, handleSeatClick, onGridEdge],
   );
 
   return (
@@ -152,6 +165,7 @@ export function SeatMap({ venue, visibleSectionIndex = -1 }: SeatMapProps) {
                 selected={selectedSet.has(seat.id)}
                 focused={focusedSeatId === seat.id}
                 onClick={handleSeatClick}
+                onFocus={handleSeatFocus}
               />
             )),
           ),

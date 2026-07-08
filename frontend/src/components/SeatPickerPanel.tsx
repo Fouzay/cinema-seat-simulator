@@ -1,4 +1,4 @@
-import { useState, useCallback, type ReactNode } from 'react';
+import { useState, useCallback, useEffect, type ReactNode } from 'react';
 import type { Venue } from '@/types';
 import { SeatMap } from '@/components/SeatMap';
 import { buildQuickPickVenue } from '@/utils/quickPickSeats';
@@ -24,21 +24,33 @@ export function SeatPickerPanel({ venue, children }: SeatPickerPanelProps) {
     setCurrentSection(s => Math.max(s - 1, 0));
   }, []);
 
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setMinimized(m => !m);
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
+
+  const handleGridEdge = useCallback((direction: 'prev' | 'next') => {
+    if (showAll) return;
+    if (direction === 'next') {
+      const btn = document.querySelector<HTMLButtonElement>('button[aria-label="Next section"]');
+      btn?.focus();
+    } else {
+      const btn = document.querySelector<HTMLButtonElement>('button[aria-label="Previous section"]');
+      btn?.focus();
+    }
+  }, [showAll]);
+
   const slidePx = Math.max(8, 32 - currentSection * 1.5);
   const animName = showAll ? `sectionSlideIn-all` : `sectionSlideIn-${currentSection}`;
 
   const content = showAll
     ? <SeatMap venue={quickPickVenue} visibleSectionIndex={0} />
-    : (children ?? <SeatMap venue={venue} visibleSectionIndex={currentSection} />);
-
-  const handlePanelKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (showAll) return;
-    if (e.key === 'ArrowRight') {
-      goNext();
-    } else if (e.key === 'ArrowLeft') {
-      goPrev();
-    }
-  }, [showAll, goNext, goPrev]);
+    : (children ?? <SeatMap venue={venue} visibleSectionIndex={currentSection} onGridEdge={handleGridEdge} />);
 
   if (minimized) {
     return (
@@ -56,8 +68,6 @@ export function SeatPickerPanel({ venue, children }: SeatPickerPanelProps) {
     <div
       className="absolute bottom-6 left-1/2 z-10 h-72 w-[80rem] max-w-[96vw] -translate-x-1/2 rounded-xl border border-white/20 bg-black/10 p-3 shadow-2xl backdrop-blur-md"
       style={{ WebkitBackdropFilter: 'blur(6px)', backdropFilter: 'blur(6px)' }}
-      tabIndex={-1}
-      onKeyDown={handlePanelKeyDown}
     >
       <div className="flex h-full w-full flex-col">
         <div className="relative flex-1 overflow-hidden">
@@ -94,6 +104,7 @@ export function SeatPickerPanel({ venue, children }: SeatPickerPanelProps) {
                 onClick={goPrev}
                 disabled={currentSection === 0}
                 className="rounded bg-white/10 px-3 py-1 text-xs text-white transition-colors hover:bg-white/20 disabled:opacity-30"
+                aria-label="Previous section"
               >
                 ← Prev
               </button>
@@ -111,6 +122,7 @@ export function SeatPickerPanel({ venue, children }: SeatPickerPanelProps) {
                   onClick={goNext}
                   disabled={currentSection === sectionCount - 1}
                   className="rounded bg-white/10 px-3 py-1 text-xs text-white transition-colors hover:bg-white/20 disabled:opacity-30"
+                  aria-label="Next section"
                 >
                   Next →
                 </button>
