@@ -3,7 +3,7 @@ import type { Venue } from '@/types';
 const COLS = 50;
 const ROWS = 20;
 const SEAT_SPACING_X = 56;
-const SEAT_SPACING_Y = 38;
+const SEAT_SPACING_Y = 48;
 const START_X = 20;
 const START_Y = 30;
 const MAP_WIDTH = 2800;
