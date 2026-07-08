@@ -34,20 +34,36 @@ export function SeatPickerPanel({ venue, children }: SeatPickerPanelProps) {
 
       if (!e.key.startsWith('Arrow')) return;
       const active = document.activeElement;
-      if (!panelRef.current?.contains(active)) return;
-      const tag = active?.tagName;
-      if (tag === 'svg' || active?.getAttribute('role') === 'button') return;
+      const panel = panelRef.current;
+      if (!panel) return;
 
-      const buttons = panelRef.current.querySelectorAll<HTMLButtonElement>('button:not([disabled])');
-      const arr = Array.from(buttons);
-      const idx = arr.indexOf(active as HTMLButtonElement);
+      // First arrow key anywhere → focus SVG to activate seat grid
+      if (!panel.contains(active)) {
+        const svg = panel.querySelector<SVGSVGElement>('svg[tabindex]');
+        svg?.focus();
+        return;
+      }
+
+      // Seat rects and SVG handle their own arrows
+      if (active?.tagName === 'svg' || active?.getAttribute('role') === 'button') return;
+
+      // Button-to-button cycling — include SVG so arrows can return to grid
+      const focusable = panel.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), svg[tabindex]',
+      );
+      const arr = Array.from(focusable);
+      const idx = arr.indexOf(active as HTMLElement);
       if (idx === -1) return;
 
       e.preventDefault();
       if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-        arr[(idx + 1) % arr.length]?.focus();
+        const next = arr[(idx + 1) % arr.length];
+        if (next.tagName === 'svg') next.focus();
+        else next?.focus();
       } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-        arr[(idx - 1 + arr.length) % arr.length]?.focus();
+        const prev = arr[(idx - 1 + arr.length) % arr.length];
+        if (prev.tagName === 'svg') prev.focus();
+        else prev?.focus();
       }
     };
     window.addEventListener('keydown', handler);
