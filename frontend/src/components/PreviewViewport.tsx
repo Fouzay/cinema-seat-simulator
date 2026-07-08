@@ -12,6 +12,7 @@ import {
   WALL_YAW_DEG,
 } from '@/constants/preview';
 import { buildArenaLayout } from '@/utils/arenaLayout';
+import { buildQuickPickVenue } from '@/utils/quickPickSeats';
 import { useSelectionContext } from '@/context/SelectionContext';
 
 const DESIGN_VIEWPORT_WIDTH = 1400;
@@ -35,9 +36,10 @@ export function PreviewViewport({ venue }: PreviewViewportProps) {
   }, []);
 
   const arenaLayout = useMemo(() => buildArenaLayout(venue), [venue]);
+  const quickPickLayout = useMemo(() => buildArenaLayout(buildQuickPickVenue()), []);
 
   const activePosition = activeSeatId
-    ? (arenaLayout.get(activeSeatId) ?? null)
+    ? (arenaLayout.get(activeSeatId) ?? quickPickLayout.get(activeSeatId) ?? null)
     : null;
 
   const defaultPosition = useMemo(() => {
