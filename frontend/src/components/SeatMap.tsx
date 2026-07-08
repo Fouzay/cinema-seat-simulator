@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState, useRef } from 'react';
 import type { SeatStatus, Venue } from '@/types';
 import { Seat } from '@/components/Seat';
 import { useSelectionContext } from '@/context/SelectionContext';
@@ -8,8 +8,16 @@ export interface SeatMapProps {
   visibleSectionIndex?: number;
 }
 
+interface GridEntry {
+  id: string;
+  row: number;
+  col: number;
+}
+
 export function SeatMap({ venue, visibleSectionIndex = -1 }: SeatMapProps) {
   const { selectedSeatIds, toggleSeat, setActiveSeat } = useSelectionContext();
+  const [focusedSeatId, setFocusedSeatId] = useState<string | null>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
 
   const selectedSet = useMemo(() => new Set(selectedSeatIds), [selectedSeatIds]);
 
@@ -32,6 +40,24 @@ export function SeatMap({ venue, visibleSectionIndex = -1 }: SeatMapProps) {
     return map;
   }, [sections]);
 
+  const grid = useMemo(() => {
+    const rows = new Map<number, GridEntry[]>();
+    const byId = new Map<string, GridEntry>();
+    sections.forEach((section) => {
+      section.rows.forEach((row) => {
+        const entries: GridEntry[] = [];
+        row.seats.forEach((seat) => {
+          const entry: GridEntry = { id: seat.id, row: row.index, col: seat.col };
+          entries.push(entry);
+          byId.set(seat.id, entry);
+        });
+        entries.sort((a, b) => a.col - b.col);
+        rows.set(row.index, entries);
+      });
+    });
+    return { rows, byId };
+  }, [sections]);
+
   const handleSeatClick = useCallback(
     (seatId: string) => {
       const status = seatStatusById.get(seatId);
@@ -42,13 +68,78 @@ export function SeatMap({ venue, visibleSectionIndex = -1 }: SeatMapProps) {
     [seatStatusById, toggleSeat, setActiveSeat],
   );
 
+  const focusSeat = useCallback((seatId: string) => {
+    setFocusedSeatId(seatId);
+    const el = document.getElementById(seatId);
+    el?.focus();
+  }, []);
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      const current = focusedSeatId;
+      if (!current) return;
+      const entry = grid.byId.get(current);
+      if (!entry) return;
+
+      let nextId: string | null = null;
+
+      if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        const sameRow = grid.rows.get(entry.row);
+        if (sameRow) {
+          const idx = sameRow.findIndex(g => g.id === current);
+          if (idx < sameRow.length - 1) nextId = sameRow[idx + 1].id;
+        }
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        const sameRow = grid.rows.get(entry.row);
+        if (sameRow) {
+          const idx = sameRow.findIndex(g => g.id === current);
+          if (idx > 0) nextId = sameRow[idx - 1].id;
+        }
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        const rows = [...grid.rows.keys()].sort((a, b) => a - b);
+        const rowIdx = rows.indexOf(entry.row);
+        if (rowIdx < rows.length - 1) {
+          const nextRow = rows[rowIdx + 1];
+          const nextRowSeats = grid.rows.get(nextRow);
+          if (nextRowSeats && nextRowSeats.length > 0) {
+            const colIdx = Math.min(entry.col - 1, nextRowSeats.length - 1);
+            nextId = nextRowSeats[colIdx].id;
+          }
+        }
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        const rows = [...grid.rows.keys()].sort((a, b) => a - b);
+        const rowIdx = rows.indexOf(entry.row);
+        if (rowIdx > 0) {
+          const prevRow = rows[rowIdx - 1];
+          const prevRowSeats = grid.rows.get(prevRow);
+          if (prevRowSeats && prevRowSeats.length > 0) {
+            const colIdx = Math.min(entry.col - 1, prevRowSeats.length - 1);
+            nextId = prevRowSeats[colIdx].id;
+          }
+        }
+      }
+
+      if (nextId) {
+        focusSeat(nextId);
+        handleSeatClick(nextId);
+      }
+    },
+    [focusedSeatId, grid, focusSeat, handleSeatClick],
+  );
+
   return (
     <svg
+      ref={svgRef}
       viewBox={`0 0 ${venue.map.width} ${venue.map.height}`}
       preserveAspectRatio="xMidYMid meet"
       className="h-full w-full"
       role="img"
       aria-label={`Seating map for ${venue.name}`}
+      onKeyDown={handleKeyDown}
     >
       <g transform="translate(0,40)">
         {sections.map((section) =>
@@ -59,6 +150,7 @@ export function SeatMap({ venue, visibleSectionIndex = -1 }: SeatMapProps) {
                 seat={seat}
                 sectionLabel={section.label}
                 selected={selectedSet.has(seat.id)}
+                focused={focusedSeatId === seat.id}
                 onClick={handleSeatClick}
               />
             )),

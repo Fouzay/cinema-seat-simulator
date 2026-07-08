@@ -38,6 +38,7 @@ function SeatComponent({ seat, sectionLabel, selected = false, focused = false, 
     <g>
       <title>{`${sectionLabel} Row ${seat.id.split('-')[1]} Seat ${seat.id.split('-')[2]} — ${statusLabel}`}</title>
       <rect
+        id={seat.id}
         x={seat.x - SEAT_RADIUS}
         y={seat.y - SEAT_RADIUS}
         width={SEAT_RADIUS * 2}

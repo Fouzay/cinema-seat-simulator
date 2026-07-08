@@ -31,6 +31,15 @@ export function SeatPickerPanel({ venue, children }: SeatPickerPanelProps) {
     ? <SeatMap venue={quickPickVenue} visibleSectionIndex={0} />
     : (children ?? <SeatMap venue={venue} visibleSectionIndex={currentSection} />);
 
+  const handlePanelKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (showAll) return;
+    if (e.key === 'ArrowRight') {
+      goNext();
+    } else if (e.key === 'ArrowLeft') {
+      goPrev();
+    }
+  }, [showAll, goNext, goPrev]);
+
   if (minimized) {
     return (
       <button
@@ -47,6 +56,8 @@ export function SeatPickerPanel({ venue, children }: SeatPickerPanelProps) {
     <div
       className="absolute bottom-6 left-1/2 z-10 h-72 w-[80rem] max-w-[96vw] -translate-x-1/2 rounded-xl border border-white/20 bg-black/10 p-3 shadow-2xl backdrop-blur-md"
       style={{ WebkitBackdropFilter: 'blur(6px)', backdropFilter: 'blur(6px)' }}
+      tabIndex={-1}
+      onKeyDown={handlePanelKeyDown}
     >
       <div className="flex h-full w-full flex-col">
         <div className="relative flex-1 overflow-hidden">
