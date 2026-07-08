@@ -10,9 +10,11 @@ export interface SeatProps {
   focused?: boolean;
   onClick?: (seatId: string) => void;
   onFocus?: (seatId: string) => void;
+  onHover?: (seatId: string) => void;
+  onHoverEnd?: (seatId: string) => void;
 }
 
-function SeatComponent({ seat, sectionLabel, selected = false, focused = false, onClick, onFocus }: SeatProps) {
+function SeatComponent({ seat, sectionLabel, selected = false, focused = false, onClick, onFocus, onHover, onHoverEnd }: SeatProps) {
   const [hovered, setHovered] = useState(false);
   const visualState: SeatVisualState = selected ? 'selected' : seat.status;
   const theme = SEAT_STATUS_THEME[visualState];
@@ -53,8 +55,8 @@ function SeatComponent({ seat, sectionLabel, selected = false, focused = false, 
         onClick={handleClick}
         onKeyDown={handleKeyDown}
         onFocus={() => onFocus?.(seat.id)}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
+        onMouseEnter={() => { setHovered(true); onHover?.(seat.id); }}
+        onMouseLeave={() => { setHovered(false); onHoverEnd?.(seat.id); }}
         tabIndex={-1}
         role="button"
         aria-label={`${sectionLabel} Row ${seat.id.split('-')[1]} Seat ${seat.id.split('-')[2]}, ${visualState}`}

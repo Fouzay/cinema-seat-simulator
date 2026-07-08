@@ -153,6 +153,16 @@ export function SeatMap({ venue, visibleSectionIndex = -1, onGridEdge }: SeatMap
     [focusedSeatId, grid, focusSeat, handleSeatClick, onGridEdge],
   );
 
+  const handleHover = useCallback((seatId: string) => {
+    setActiveSeat(seatId);
+  }, [setActiveSeat]);
+
+  const handleHoverEnd = useCallback((seatId: string) => {
+    if (!selectedSet.has(seatId)) {
+      setActiveSeat(null);
+    }
+  }, [selectedSet, setActiveSeat]);
+
   return (
     <svg
       ref={svgRef}
@@ -176,6 +186,8 @@ export function SeatMap({ venue, visibleSectionIndex = -1, onGridEdge }: SeatMap
                 focused={focusedSeatId === seat.id}
                 onClick={handleSeatClick}
                 onFocus={handleSeatFocus}
+                onHover={handleHover}
+                onHoverEnd={handleHoverEnd}
               />
             )),
           ),
